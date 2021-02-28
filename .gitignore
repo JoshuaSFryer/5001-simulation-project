@@ -1,2 +1,6 @@
 # Hide PyCharm system files
 .idea/
+
+*.code-workspace
+
+__pycache__

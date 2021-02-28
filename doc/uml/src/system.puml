@@ -1,0 +1,101 @@
+@startuml system-class-diagram
+
+skinparam ClassAttributeIconSize 0
+' skinparam Linetype ortho
+
+
+
+package "System" {
+    class System {
+        - clock : int
+        - num_outputs : int
+        - blocked_time : int
+
+        - init()
+        - time_advance()
+        - next_event()
+        - event_inspection(e:EndInspectionEvent)
+        - event_assembly(e:EndAssemblyEvent)
+        - event_end(e:EndSimulationEvent)
+        - generate_statistics()
+    }
+
+    enum ComponentType {
+        C1
+        C2
+        C3
+    }
+
+    package "Inspector" {
+        class Inspector {
+            + id : int
+            - input_types : list<ComponentType>
+            ' - routing : OutputPolicy
+
+            - pick_input()
+            - pick_output()
+            - generate_duration() : float
+            - inspect()
+            - is_blocked() : bool
+        }
+
+        enum OutputPolicy {
+            DEFAULT
+            SHORTEST_QUEUE
+        }   
+
+        Inspector --> ComponentType : Inspects
+        Inspector --> OutputPolicy : Implements
+    }
+
+    package "Workstation" {
+        class Workstation {
+            + id : int
+            + output_type : ProductType
+            
+            - generate_duration() : float
+            - get_components()
+            - assemble()
+            + can_accept(input:ComponentType) : bool
+        }
+
+        class Buffer {
+            + id : int
+            - type : ComponentType
+            - capacity : int
+            - contents : list<ComponentType>
+
+            + enqueue(type:ComponentType)
+            + dequeue() : ComponentType
+            + is_full() : bool
+            + is_empty() : bool
+        }
+
+        enum ProductType {
+            P1
+            P2
+            P3
+        }
+
+        Workstation --> ProductType : Outputs
+        Workstation --> ComponentType : Consumes
+        Workstation "1" *-- "*" Buffer : Draws From
+        Buffer -left-> ComponentType : Stores
+
+    }
+
+    class FutureEventList {
+        events : list<Event>
+        add_event(time)
+        next() : Event
+    }   
+
+    System "1" o-- "*" Inspector
+    System "1" o-- "*" Workstation
+    System  *--  FutureEventList : Manages
+    Inspector --> Workstation : Outputs to
+
+
+}
+
+@enduml

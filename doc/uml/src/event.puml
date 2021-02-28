@@ -1,0 +1,24 @@
+@startuml event-class-diagram
+skinparam ClassAttributeIconSize 0
+
+Package "Event" {
+    abstract class Event {
+        + time : int
+    }
+
+    class EndInspectionEvent {
+        + inspector_id : string
+    }
+
+    class EndWorkstationEvent {
+        + station_id : string
+    }
+
+    class EndSimulationEvent {}
+
+    EndInspectionEvent .up.|> Event
+    EndWorkstationEvent .up.|> Event
+    EndSimulationEvent .up.|> Event
+}
+
+@enduml
