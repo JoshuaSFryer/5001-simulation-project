@@ -1,9 +1,11 @@
+import random
 
 from buffer import Buffer
 from fel import FutureEventList
 from inspector import Inspector
 from workstation import Workstation
 
+rng_seed = None
 
 class System():
     def __init__(self):
@@ -13,6 +15,11 @@ class System():
         # Track time inspectors (either, or both) spend blocked
         self.blocked_time = 0
 
+        # Seed RNG if desired
+        if not rng_seed is None:
+            random.seed(rng_seed)
+
+        # Setup FEL
         self.event_list = FutureEventList()
 
         # Create inspectors

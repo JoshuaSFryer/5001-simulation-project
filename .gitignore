@@ -1,6 +1,11 @@
 # Hide PyCharm system files
 .idea/
 
+# Visual Studio Code workspace files
 *.code-workspace
 
+# Python bytecode cache
 __pycache__
+
+# Sample timing data provided with project description
+sample_data
