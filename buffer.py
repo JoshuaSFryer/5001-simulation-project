@@ -37,5 +37,9 @@ class Buffer:
         return len(self.contents) == 0
 
 
+    def get_length(self):
+        return len(self.contents)
+
+
 class BufferException(Exception):
     pass

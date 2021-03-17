@@ -1,8 +1,9 @@
 import random
 
 from buffer import Buffer
+from component import ComponentType, ProductType
 from fel import FutureEventList
-from inspector import Inspector
+from inspector import Inspector, OutputPolicy
 from workstation import Workstation
 
 rng_seed = None
@@ -22,11 +23,17 @@ class System():
         # Setup FEL
         self.event_list = FutureEventList()
 
-        # Create inspectors
-        ...
-
         # Create workstations
-        ...
+        ws_1 = Workstation([ComponentType.C1], ProductType.P1, 1)
+        ws_2 = Workstation([ComponentType.C1, ComponentType.C2], ProductType.P2, 2)
+        ws_3 = Workstation([ComponentType.C1, ComponentType.C2], ProductType.P3, 3)
+
+        # Create inspectors
+        ins_1 = Inspector([ComponentType.C1], [ws_1, ws_2, ws_3], 
+                            OutputPolicy.SHORTEST_QUEUE)
+
+        ins_2 = Inspector([ComponentType.C1, ComponentType.C2], [ws_2, ws_3],
+                          OutputPolicy.NAIVE)
 
         # Generate initial events
         ...
@@ -75,4 +82,4 @@ class System():
 
 if __name__ == '__main__':
     # Initialize a system
-    ...
+    sys = System()
