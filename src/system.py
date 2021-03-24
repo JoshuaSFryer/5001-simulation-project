@@ -130,11 +130,11 @@ class System():
             blocked_inspectors = [i for i in self.inspectors if i.is_blocked() and i.component in ws_types]
             for i in blocked_inspectors:
                 i.output_component()
-        # Otherwise, do nothing. This should never occur, though, as assembly
-        # events ought only to be scheduled when the workstation is ready.
+        # Otherwise, do nothing. This situation may occur if too many assembly
+        # events are scheduled in the FEL (e.g. two events are scheduled, but
+        # the buffers contain 2 of one component and 1 of the other).
         else:
-            # pass
-            raise Exception("This state should be unreachable.")
+            print('Assembly aborted: missing components.')
 
     
     def event_end(self):
