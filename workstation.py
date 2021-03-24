@@ -1,19 +1,28 @@
 from buffer import Buffer, BufferException
 from component import ComponentType, ProductType
+from event import EndAssemblyEvent
+from rng import generate_exp
 
 
 class Workstation:
-    def __init__(self, inputs:list, output:ProductType, 
-                priority:int):
+    def __init__(self, parent, id, lam, inputs:list, output:ProductType):
+        self.id = id
+
+        self.parent = parent
+        # Lambda of exponential distribution associated with this inspector
+        self.lam = lam
+
         # Type of product this station assembles
         self.output_type = output
 
         self.buffers = dict()
+        self.ready_components = dict()
         for comp in inputs:
             self.buffers[comp] = Buffer(comp)
 
-        # This station's priority in the case of a tie
-        self.priority = priority
+
+    def generate_time(self, base_time):
+        return base_time + generate_exp(self.lam)
 
     
     def can_accept(self, input:ComponentType):
@@ -22,7 +31,7 @@ class Workstation:
         This requires a Buffer of the correct type, that is not full.
         """
 
-        if input in self.buffers:
+        if input in self.buffers.keys():
             if not self.buffers[input].is_full():
                 return True
         return False
@@ -32,12 +41,12 @@ class Workstation:
         """
         Get the buffer associated with the given component, or None.
         """
-        if input in self.buffers:
+        if input in self.buffers.keys():
             return self.buffers[input]
         return None
 
     
-    def accept_component(self, input:ComponentType):
+    def enqueue_component(self, input:ComponentType):
         """
         Take a component provided by an inspector and put it in the appropriate
         buffer.
@@ -45,20 +54,65 @@ class Workstation:
         try:
             self.buffers[input].enqueue(input)
         except BufferException as e:
-            print(e)
+            raise(e)
 
     
-    def get_components(self):
-        """
-        Pull the components this Workstation requires to assemble from its
-        buffers.
-        """
-        ...
-    
+    def accept_component(self, input:ComponentType):
+        self.enqueue_component(input)
+        if self.all_components_ready():
+            self.notify_ready()
 
+
+    def notify_ready(self):
+        """
+        Notify the system that this workstation has all the parts it needs to
+        begin assembly
+        """
+        time = self.generate_time(self.parent.clock)
+        self.parent.schedule_workstation(self, time)
+
+    
     def assemble(self):
         """
-        Take needed components from buffers and output a product.
+        Take the required components from the buffers and return True if successful.
+        If not, do nothing and return False.
         """
-        ...
+        if self.all_components_ready():
+            for comp in self.buffers.keys():
+                self.get_buffer(comp).dequeue()
+            return True
         
+        return False
+
+
+    def all_components_ready(self):
+        """
+        Return True if this workstation's buffers each have at least one of
+        the components necessary for assembly, False otherwise.
+        """
+        for k in self.buffers.keys():
+            if self.comp_ready(k) == False:
+                return False
+        return True
+
+    
+    def find_missing_components(self):
+        """
+        Determine which component types are missing, preventing the workstation
+        from performing an assembly.
+        """
+        missing = list()
+        types = self.buffers.keys()
+        for t in types:
+            if self.is_ready(t) == False:
+                missing.append(t)
+
+        return missing
+
+
+    def comp_ready(self, component):
+        """
+        Return True if the buffer handling the given component type contains at
+        least one item.
+        """
+        return not self.get_buffer(component).is_empty()

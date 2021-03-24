@@ -1,8 +1,9 @@
 # Hide PyCharm system files
 .idea/
 
-# Visual Studio Code workspace files
+# Visual Studio Code workspace files and configuration
 *.code-workspace
+.vscode/
 
 # Python bytecode cache
 __pycache__

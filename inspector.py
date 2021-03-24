@@ -1,15 +1,23 @@
 from enum import Enum, auto
 import random
 
-from component import ComponentType
 from buffer import Buffer
+from component import ComponentType
+from event import EndInspectionEvent
+from rng import generate_exp
 from workstation import Workstation
 
 class Inspector:
     """
 
     """
-    def __init__(self, types:list, stations:list, out_routing):
+    def __init__(self, parent, id, lam, types:list, stations:list, out_routing):
+        self.id = id
+
+        self.parent = parent
+        # Lambda of exponential distribution associated with this inspector
+        # For inspectors, this is a dict mapping component types to lambdas
+        self.lam = lam
         # Types of components this inspector handles
         self.input_types = types
         # Workstations this inspector can output to
@@ -17,19 +25,26 @@ class Inspector:
         # How this inspector routes its outputs
         self.routing = out_routing
         # Currently-held component
-        self.component = None
+        self.component = self.choose_input()
+        
+        self.last_event_time = 0
+        self.time_blocked = 0
     
 
-    def pick_input(self):
+    def choose_input(self):
         """
         Get the next component 
         """
         return random.choice(self.input_types)
 
+    
+    def generate_time(self, base_time, input_type):
+        return base_time + generate_exp(self.lam[input_type])
 
-    def pick_output(self):
+
+    def choose_output(self):
         chosen_workstation = None
-        if self.output_routing == OutputPolicy.NAIVE:
+        if self.routing == OutputPolicy.NAIVE:
             # Check all the workstations this inspector can push to, and put the 
             # component in the first (only) available one.
 
@@ -41,7 +56,7 @@ class Inspector:
                 if w.can_accept(self.component):
                     chosen_workstation = w
 
-        elif self.output_routing == OutputPolicy.SHORTEST_QUEUE:
+        elif self.routing == OutputPolicy.SHORTEST_QUEUE:
             # Check all the workstations this inspector can push to, and put the
             # component in the one with the shortest queue.
 
@@ -77,13 +92,27 @@ class Inspector:
                 chosen_workstation = tied_stations[0]
             else:
                 # If there's a tie, get the highest-priority station
-                tied_stations.sort(key=lambda w: w.priority)
+                tied_stations.sort(key=lambda w: w.id)
                 chosen_workstation = tied_stations[0]
 
-        # Give the component to the workstation
-        w.accept_component(self.component)
-        self.component = None
+            if not chosen_workstation.can_accept(self.component):
+                chosen_workstation = None
 
+        return chosen_workstation
+
+
+    def output_component(self):
+        w = self.choose_output()
+        # Give the component to the workstation
+        if w is not None:
+            w.accept_component(self.component)
+            # Grab a new component
+            self.component = self.choose_input()
+
+
+    def is_blocked(self):
+        return (self.choose_output() is None)
+        
 
 class OutputPolicy(Enum):
     NAIVE = auto()
