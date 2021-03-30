@@ -14,10 +14,11 @@ rng_seed = None
 END_TIME = 1000.00
 
 # Lambda values for the various distributions
+# Inspectors
 IN1_LAM = 0.0965
 IN2_LAM_C2 = 0.0644
 IN2_LAM_C3 = 0.0485
-
+# Workstations
 WS1_LAM = 0.2172
 WS2_LAM = 0.09015
 WS3_LAM = 0.1137
@@ -26,7 +27,7 @@ class System():
     def __init__(self):
         print('Simulation Start')
         self.running = True
-
+        # Track current time
         self.clock = 0
         # Track number of products output in order to calculate throughput
         self.num_P1 = 0
@@ -60,6 +61,7 @@ class System():
         # As well as an end-simulation event
         self.schedule_event(EndSimulationEvent(END_TIME))
 
+        # Print initial state to console
         self.print_current_state(None)
 
 
@@ -78,16 +80,27 @@ class System():
         elif isinstance(next_event, EndSimulationEvent):
             self.event_end()
 
-            
+
     def schedule_event(self, event):
+        """
+        Put an event into the future event list.
+        """
         self.event_list.put(event)
 
-    
+
     def schedule_inspection(self, inspector, time):
+        """
+        Schedule an end-of-inspection event for the given instructor at the
+        specified time.
+        """
         self.schedule_event(EndInspectionEvent(time, inspector.id))
 
     
     def schedule_workstation(self, workstation, time):
+        """
+        Schedule an end-of-assembly event for the given workstation at the
+        specified time.
+        """
         self.schedule_event(EndAssemblyEvent(time, workstation.id))
 
 
@@ -204,50 +217,61 @@ class System():
 
 
     def get_inspector_by_id(self, id):
+        """
+        Find and return an inspector with the given ID string
+        """
         for i in self.inspectors:
             if i.id == id:
                 return i
 
     
     def get_workstation_by_id(self, id):
+        """
+        Find and return an workstation with the given ID string
+        """
         for w in self.workstations:
             if w.id == id:
                 return w
 
     
-    def determine_next_departure(self, comp):
-        # Build a list of stations that can handle the specified component
-        station_ids = list()
-        for w in self.workstations:
-            if w.can_accept(comp):
-                station_ids.append(w.id)
+    # def determine_next_departure(self, comp):
+    #     """
+    #     Return the time right after the time of the next assembly event that 
+    #     will use up a component of the specified type.
+    #     This is used to 
+    #     """
+    #     # Build a list of stations that can handle the specified component
+    #     station_ids = list()
+    #     for w in self.workstations:
+    #         if w.can_accept(comp):
+    #             station_ids.append(w.id)
 
-        # Find the first assembly event that involves any of these stations
-        # The inspector can try again the tick after that assembly is scheduled
-        # If it is still blocked, the inspector can run this function again
-        for event in sorted(self.event_list.queue):
-            id = event.id
-            if id in station_ids:
-                return event.time + 1
+    #     # Find the first assembly event that involves any of these stations
+    #     # The inspector can try again the tick after that assembly is scheduled
+    #     # If it is still blocked, the inspector can run this function again
+    #     for event in sorted(self.event_list.queue):
+    #         id = event.id
+    #         if id in station_ids:
+    #             return event.time + 1.0
 
-        return None
+    #     return None
 
 
-    def determine_next_arrival(self, comp):
-        """
-        Determine the next event where an inspector that handles the specified
-        component type will output a component.
-        """
-        inspector_ids = list()
-        for i in self.inspectors:
-            if comp in i.input_types:
-                inspector_ids.append(i.id)
+    # def determine_next_arrival(self, comp):
+    #     """
+    #     Determine the next event where an inspector that handles the specified
+    #     component type will output a component.
+    #     """
+    #     inspector_ids = list()
+    #     for i in self.inspectors:
+    #         if comp in i.input_types:
+    #             inspector_ids.append(i.id)
         
-        # Find the first inspeciton event that involves any of these stations
-        for event in sorted(self.event_list.queue):
-            id = event.id
-            if id in inspector_ids:
-                return event.time + 1
+    #     # Find the first inspeciton event that involves any of these stations
+    #     for event in sorted(self.event_list.queue):
+    #         id = event.id
+    #         if id in inspector_ids:
+    #             return event.time + 1.0
 
 
 

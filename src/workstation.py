@@ -26,6 +26,9 @@ class Workstation:
 
 
     def generate_time(self, base_time):
+        """
+        Calculate a time for the next assembly event.
+        """
         return base_time + generate_exp(self.lam, self.rng)
 
     
@@ -62,6 +65,11 @@ class Workstation:
 
     
     def accept_component(self, input:ComponentType):
+        """
+        Recieve a component from an inspector. If this new component's arrival
+        means that this workstation has the parts it needs to perform an
+        assembly, notify the system of this.
+        """
         self.enqueue_component(input)
         if self.all_components_ready():
             self.notify_ready()

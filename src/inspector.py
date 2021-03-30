@@ -37,14 +37,26 @@ class Inspector:
         """
         Get the next component 
         """
+        # Pick an element at random from the types this inspector can uses
         return random.choice(self.input_types)
 
     
     def generate_time(self, base_time, input_type):
+        """
+        Calculate a time for the next inspection event.
+        Inspector 2 has a different distribution for each of its types, so
+        the component type must be specified.
+        """
         return base_time + generate_exp(self.lam[input_type], self.rng)
 
 
     def choose_output(self):
+        """
+        Choose which workstation to output this inspector's currently held 
+        component to.
+        Returns None if there is no eligible workstation (so this inspector is
+        blocked).
+        """
         chosen_workstation = None
         if self.routing == OutputPolicy.NAIVE:
             # Check all the workstations this inspector can push to, and put the 
@@ -105,6 +117,10 @@ class Inspector:
 
 
     def output_component(self):
+        """
+        Push the currently held component to a workstation chosen by this 
+        inspector's output policy.
+        """
         w = self.choose_output()
         # Give the component to the workstation
         w.accept_component(self.component)
@@ -113,6 +129,9 @@ class Inspector:
 
 
     def is_blocked(self):
+        """
+        Return True if this inspector is blocked.
+        """
         return (self.choose_output() is None)
         
 
