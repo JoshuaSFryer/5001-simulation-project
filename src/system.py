@@ -35,10 +35,6 @@ class System():
         # Track time inspectors (either, or both) spend blocked
         self.blocked_time = 0
 
-        # Seed RNG if desired
-        if not rng_seed is None:
-            random.seed(rng_seed)
-
         # Setup FEL
         self.event_list = PriorityQueue()
 

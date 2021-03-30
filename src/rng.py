@@ -1,11 +1,10 @@
 import math
-import random
 import matplotlib.pyplot as plt
 import numpy as np
 
 
-def generate_exp(L):
-    R = random.random()
+def generate_exp(L, generator):
+    R = generator.random()
     return cdf_exponential_inverse(L, R)
 
 

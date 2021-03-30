@@ -18,6 +18,8 @@ class Inspector:
         # Lambda of exponential distribution associated with this inspector
         # For inspectors, this is a dict mapping component types to lambdas
         self.lam = lam
+        # Individual RNG stream for this inspector
+        self.rng = random.Random()
         # Types of components this inspector handles
         self.input_types = types
         # Workstations this inspector can output to
@@ -39,7 +41,7 @@ class Inspector:
 
     
     def generate_time(self, base_time, input_type):
-        return base_time + generate_exp(self.lam[input_type])
+        return base_time + generate_exp(self.lam[input_type], self.rng)
 
 
     def choose_output(self):

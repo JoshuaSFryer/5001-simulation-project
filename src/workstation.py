@@ -1,3 +1,4 @@
+import random
 from buffer import Buffer, BufferException
 from component import ComponentType, ProductType
 from event import EndAssemblyEvent
@@ -6,11 +7,14 @@ from rng import generate_exp
 
 class Workstation:
     def __init__(self, parent, id, lam, inputs:list, output:ProductType):
+        # ID string
         self.id = id
-
+        # Reference to system
         self.parent = parent
         # Lambda of exponential distribution associated with this inspector
         self.lam = lam
+        # Individual RNG stream for this workstation
+        self.rng = random.Random()
 
         # Type of product this station assembles
         self.output_type = output
@@ -22,7 +26,7 @@ class Workstation:
 
 
     def generate_time(self, base_time):
-        return base_time + generate_exp(self.lam)
+        return base_time + generate_exp(self.lam, self.rng)
 
     
     def can_accept(self, input:ComponentType):
