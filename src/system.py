@@ -29,7 +29,9 @@ class System():
 
         self.clock = 0
         # Track number of products output in order to calculate throughput
-        self.num_outputs = 0
+        self.num_P1 = 0
+        self.num_P2 = 0
+        self.num_P3 = 0
         # Track time inspectors (either, or both) spend blocked
         self.blocked_time = 0
 
@@ -79,8 +81,8 @@ class System():
             self.event_assembly(next_event)
         elif isinstance(next_event, EndSimulationEvent):
             self.event_end()
-        
-    
+
+            
     def schedule_event(self, event):
         self.event_list.put(event)
 
@@ -100,15 +102,16 @@ class System():
         ins = self.get_inspector_by_id(event.id)
         # If the inspector is blocked, do nothing
         if ins.is_blocked():
-            pass
+            ins.time_blocked += self.clock - ins.last_event_time
         # Otherwise, have the inspector draw a new part and schedule an
         # end-of-inspection event normally.
         else:
             ins.output_component()
-            comp = ins.choose_input()
-            ins.component = comp
+            comp = ins.component
             time = ins.generate_time(self.clock, comp)
             self.schedule_inspection(ins, time)
+        
+        ins.last_event_time = self.clock
 
 
     def event_assembly(self, event):
@@ -122,14 +125,24 @@ class System():
         # consumed a component; the inspectors will push their component and
         # become unblocked.
         if wrk.all_components_ready():
-            wrk.assemble()
-            self.num_outputs += 1
-
-            ws_types = wrk.buffers.keys()
-            
+            ws_types = list(wrk.buffers.keys())
             blocked_inspectors = [i for i in self.inspectors if i.is_blocked() and i.component in ws_types]
+
+            wrk.assemble()
+
+
+            if event.id == 'WS1':
+                self.num_P1 += 1
+            elif event.id == 'WS2':
+                self.num_P2 += 1
+            elif event.id == 'WS3':
+                self.num_P3 += 1
+
             for i in blocked_inspectors:
                 i.output_component()
+                comp = i.component
+                time = i.generate_time(self.clock, comp)
+                self.schedule_inspection(i, time)
         # Otherwise, do nothing. This situation may occur if too many assembly
         # events are scheduled in the FEL (e.g. two events are scheduled, but
         # the buffers contain 2 of one component and 1 of the other).
@@ -187,7 +200,11 @@ class System():
 
 
     def print_final_statistics(self):
-        print(f'Total products: {self.num_outputs}')
+        print(f'P1: {self.num_P1}, P2: {self.num_P2}, P3: {self.num_P3}, Total: {self.num_P1 + self.num_P2 + self.num_P3}')
+        print(f'Total time blocked:')
+        for i in self.inspectors:
+            percentage = round(100 * i.time_blocked / END_TIME, 4)
+            print(f'{i.id}: {i.time_blocked} seconds ({percentage}%)')
 
 
     def get_inspector_by_id(self, id):

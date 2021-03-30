@@ -55,6 +55,7 @@ class Inspector:
             for w in self.workstations:
                 if w.can_accept(self.component):
                     chosen_workstation = w
+                    break
 
         elif self.routing == OutputPolicy.SHORTEST_QUEUE:
             # Check all the workstations this inspector can push to, and put the
@@ -104,10 +105,9 @@ class Inspector:
     def output_component(self):
         w = self.choose_output()
         # Give the component to the workstation
-        if w is not None:
-            w.accept_component(self.component)
-            # Grab a new component
-            self.component = self.choose_input()
+        w.accept_component(self.component)
+        # Grab a new component
+        self.component = self.choose_input()
 
 
     def is_blocked(self):
