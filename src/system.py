@@ -1,3 +1,4 @@
+import os
 import random
 from queue import PriorityQueue
 import sys
@@ -25,17 +26,18 @@ WS1_LAM = 0.2172
 WS2_LAM = 0.09015
 WS3_LAM = 0.1137
 
-
+LOG_DIR = 'log'
 
 class System():
     def __init__(self, replication_id):
         print('Simulation Start')
         self.running = True
-        OUT_PATH = f'rep{replication_id}.log'
         # Track current time
         self.clock = 0
 
         # Instantiate logger
+        os.makedirs(LOG_DIR, exist_ok=True)
+        OUT_PATH = os.path.join(LOG_DIR, f'rep{replication_id}.log')
         self.log = Logger(OUT_PATH)
         self.log.write_header()
         # Track number of products output in order to calculate throughput
