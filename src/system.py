@@ -1,5 +1,6 @@
 import random
 from queue import PriorityQueue
+import sys
 
 from buffer import Buffer
 from component import ComponentType, ProductType
@@ -24,12 +25,13 @@ WS1_LAM = 0.2172
 WS2_LAM = 0.09015
 WS3_LAM = 0.1137
 
-OUT_PATH = 'system.log'
+
 
 class System():
-    def __init__(self):
+    def __init__(self, replication_id):
         print('Simulation Start')
         self.running = True
+        OUT_PATH = f'rep{replication_id}.log'
         # Track current time
         self.clock = 0
 
@@ -294,8 +296,9 @@ class System():
 
 
 if __name__ == '__main__':
+    replication_number = sys.argv[1]
     # Initialize a system
-    sys = System()
+    sys = System(replication_number)
 
     while(sys.running):
         sys.time_advance()
