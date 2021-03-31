@@ -10,3 +10,4 @@ __pycache__
 
 # Sample timing data provided with project description
 sample_data
+system.log

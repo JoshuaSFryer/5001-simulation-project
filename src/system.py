@@ -6,6 +6,7 @@ from component import ComponentType, ProductType
 from event import *
 from fel import FutureEventList
 from inspector import Inspector, OutputPolicy
+from logger import Logger
 from rng import generate_exp
 from workstation import Workstation
 
@@ -23,12 +24,18 @@ WS1_LAM = 0.2172
 WS2_LAM = 0.09015
 WS3_LAM = 0.1137
 
+OUT_PATH = 'system.log'
+
 class System():
     def __init__(self):
         print('Simulation Start')
         self.running = True
         # Track current time
         self.clock = 0
+
+        # Instantiate logger
+        self.log = Logger(OUT_PATH)
+        self.log.write_header()
         # Track number of products output in order to calculate throughput
         self.num_P1 = 0
         self.num_P2 = 0
@@ -79,6 +86,17 @@ class System():
             self.event_assembly(next_event)
         elif isinstance(next_event, EndSimulationEvent):
             self.event_end()
+        
+        stats = {
+            'time': round(self.clock, 4),
+            'blocked_IN1': round(self.get_inspector_by_id('IN1').time_blocked, 4),
+            'blocked_IN2': round(self.get_inspector_by_id('IN2').time_blocked, 4),
+            'throughput_P1': round(self.num_P1 / self.clock, 4),
+            'throughput_P2': round(self.num_P2 / self.clock, 4),
+            'throughput_P3': round(self.num_P3 / self.clock, 4)
+        }
+
+        self.log.write_data(stats)
 
 
     def schedule_event(self, event):
