@@ -296,9 +296,11 @@ class System():
 
 
 if __name__ == '__main__':
-    replication_number = sys.argv[1]
-    # Initialize a system
-    sys = System(replication_number)
+    replication_number = int(sys.argv[1])
+    
+    for curr_replication in range(replication_number):
+        # Initialize a system
+        sys = System(curr_replication)
 
-    while(sys.running):
-        sys.time_advance()
+        while(sys.running):
+            sys.time_advance()
