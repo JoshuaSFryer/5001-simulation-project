@@ -95,13 +95,11 @@ class System():
             'time': round(self.clock, 4),
             'blocked_IN1': round(self.get_inspector_by_id('IN1').time_blocked, 4),
             'blocked_IN2': round(self.get_inspector_by_id('IN2').time_blocked, 4),
-            'throughput_P1': round(self.num_P1 / self.clock, 4),
-            'throughput_P2': round(self.num_P2 / self.clock, 4),
-            'throughput_P3': round(self.num_P3 / self.clock, 4)
+            'total_P1': self.num_P1,
+            'total_P2': self.num_P2,
+            'total_P3': self.num_P3
         }
-
         self.log.write_data(stats)
-
 
     def schedule_event(self, event):
         """
