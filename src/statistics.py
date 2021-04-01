@@ -87,6 +87,13 @@ if __name__ == '__main__':
                 for num in row:
                     f.write(str(num) + ',')
                 f.write('\n')
+
+    inspectors = (IN1_times, IN2_times)
+    names = ('IN1', 'IN2')
+    for list, name in zip(inspectors, names):
+        with open(f'{name}.csv', 'w') as f:
+            for time in list:
+                f.write(str(time) + ',')
     
     print('Done.')
         
