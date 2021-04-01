@@ -13,3 +13,4 @@ sample_data
 
 # Output logfiles
 log/
+*.csv

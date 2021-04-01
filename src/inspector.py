@@ -7,11 +7,13 @@ from event import EndInspectionEvent
 from rng import generate_exp
 from workstation import Workstation
 
+
 class Inspector:
     """
 
     """
-    def __init__(self, parent, id, lam, types:list, stations:list, out_routing):
+
+    def __init__(self, parent, id, lam, types: list, stations: list, out_routing):
         self.id = id
 
         self.parent = parent
@@ -28,19 +30,18 @@ class Inspector:
         self.routing = out_routing
         # Currently-held component
         self.component = self.choose_input()
-        
+
         self.last_event_time = 0
         self.time_blocked = 0
-    
 
     def choose_input(self):
         """
         Get the next component 
         """
         # Pick an element at random from the types this inspector can uses
+        # LBS: see above:  elf.input_types = types
         return random.choice(self.input_types)
 
-    
     def generate_time(self, base_time, input_type):
         """
         Calculate a time for the next inspection event.
@@ -48,7 +49,6 @@ class Inspector:
         the component type must be specified.
         """
         return base_time + generate_exp(self.lam[input_type], self.rng)
-
 
     def choose_output(self):
         """
@@ -59,12 +59,12 @@ class Inspector:
         """
         chosen_workstation = None
         if self.routing == OutputPolicy.NAIVE:
-            # Check all the workstations this inspector can push to, and put the 
+            # Check all the workstations this inspector can push to, and put the
             # component in the first (only) available one.
 
             # N.B. in the current system configuration, Inspector 2 only outputs
-            # C2 to WS2 and C3 to WS3, so this works. This would cause 
-            # unevenly distributed outputs if another buffer of either 
+            # C2 to WS2 and C3 to WS3, so this works. This would cause
+            # unevenly distributed outputs if another buffer of either
             # component type was introduced.
             for w in self.workstations:
                 if w.can_accept(self.component):
@@ -76,16 +76,16 @@ class Inspector:
             # component in the one with the shortest queue.
 
             # List of eligible workstations
+            # LBS: declare candidates instantly, put station name in it.
             candidates = list()
             for w in self.workstations:
                 buf = w.get_buffer(self.component)
                 if buf is not None:
                     candidates.append(w)
-            
+
             # Find shortest queue among candidates
             # Sort list from shortest to longest buffer fullness
             candidates.sort(key=lambda w: w.get_buffer(self.component).get_length())
-
 
             # Check for ties
             # First element is the shortest length (because the list is sorted).
@@ -101,7 +101,7 @@ class Inspector:
                     break
                 tied_stations.append(w)
 
-            # If list length is 1 there were no ties, it only contains the 
+            # If list length is 1 there were no ties, it only contains the
             # first station
             if len(tied_stations) == 1:
                 chosen_workstation = tied_stations[0]
@@ -115,6 +115,11 @@ class Inspector:
 
         return chosen_workstation
 
+    def get_id(self):
+        """
+        Get inspector Id
+        """
+        return self.id
 
     def output_component(self):
         """
@@ -122,18 +127,23 @@ class Inspector:
         inspector's output policy.
         """
         w = self.choose_output()
-        # Give the component to the workstation
-        w.accept_component(self.component)
-        # Grab a new component
-        self.component = self.choose_input()
 
+        # LBS ADD: Only if w != none that station can accept component & inspector can take new component
+        if w == None:
+            return False
+        else:
+            # Give the component to the workstation
+            w.accept_component(self.component)
+            # Grab a new component
+            self.component = self.choose_input()
+            return True
 
     def is_blocked(self):
         """
         Return True if this inspector is blocked.
         """
         return (self.choose_output() is None)
-        
+
 
 class OutputPolicy(Enum):
     NAIVE = auto()
