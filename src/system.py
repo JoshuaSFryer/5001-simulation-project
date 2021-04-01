@@ -108,7 +108,7 @@ class System():
         self.WS3_BUSY = 18
 
         self.now = time.strftime("%H-%M-%S")
-        self.logfile = "Log" + self.now + ".xls"
+        self.logfile = "Log" + str(replication_id) + ".xls"
         print("new file:" + self.logfile)
         self.workbook = xlwt.Workbook(self.logfile)
         self.worksheet = self.workbook.add_sheet(
@@ -164,6 +164,12 @@ class System():
             self.event_assembly(next_event)
         elif isinstance(next_event, EndSimulationEvent):
             self.event_end()
+
+        # Update blocked times
+        for ins in self.blocked_inspectors:
+            if ins.is_blocked():
+                ins.time_blocked += (self.clock - ins.last_event_time)
+                ins.last_event_time = self.clock
 
         self.print_inspectors()
         self.print_workstations()
@@ -228,7 +234,7 @@ class System():
         ins = self.get_inspector_by_id(event.id)
         # If the inspector is blocked, do nothing
         if ins.is_blocked():
-            ins.time_blocked += self.clock - ins.last_event_time
+            # ins.time_blocked += self.clock - ins.last_event_time
             self.blocked_inspectors.append(ins)  # LBS ADD
 
         # Otherwise, have the inspector draw a new part and schedule an
