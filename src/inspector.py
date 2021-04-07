@@ -4,6 +4,7 @@ import random
 from buffer import Buffer
 from component import ComponentType
 from event import EndInspectionEvent
+from itertools import cycle
 from rng import generate_exp
 from workstation import Workstation
 
@@ -26,6 +27,8 @@ class Inspector:
         self.input_types = types
         # Workstations this inspector can output to
         self.workstations = stations
+        # Cyclic iterator of workstations (used in Round Robin policy)
+        self.ws_cycle = cycle(self.workstations)
         # How this inspector routes its outputs
         self.routing = out_routing
         # Currently-held component
@@ -113,6 +116,17 @@ class Inspector:
             if not chosen_workstation.can_accept(self.component):
                 chosen_workstation = None
 
+        elif self.routing == OutputPolicy.ROUND_ROBIN:
+            # Cycle through WS1, WS2, WS3.
+            # If any workstation is blocked, DO NOT move on to trying another
+            # station. Instead, return None and wait for the current one to
+            # have an opening in its buffer.
+            w = next(self.ws_cycle)
+            if w.can_accept(self.component):
+                chosen_workstation = w
+            else:
+                chosen_workstation = None
+
         return chosen_workstation
 
     def get_id(self):
@@ -148,3 +162,4 @@ class Inspector:
 class OutputPolicy(Enum):
     NAIVE = auto()
     SHORTEST_QUEUE = auto()
+    ROUND_ROBIN = auto()

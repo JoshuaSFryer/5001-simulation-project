@@ -69,7 +69,7 @@ class System():
         # LBS: ins_1_lambdas is a dict formatted as �� key: value...��
         ins_1_lambdas = {ComponentType.C1: IN1_LAM}
         ins_1 = Inspector(self, 'IN1', ins_1_lambdas, [ComponentType.C1], 
-                            [ws_1, ws_2, ws_3], OutputPolicy.SHORTEST_QUEUE)
+                            [ws_1, ws_2, ws_3], OutputPolicy.ROUND_ROBIN)
 
         ins_2_lambdas = {ComponentType.C2: IN2_LAM_C2, ComponentType.C3: IN2_LAM_C3}
         ins_2 = Inspector(self, 'IN2', ins_2_lambdas, 
