@@ -21,7 +21,6 @@ from workstation import Workstation
 rng_seed = None
 
 END_TIME = 1000.00
-
 # Lambda values for the various distributions
 # Inspectors
 IN1_LAM = 0.0965
@@ -43,8 +42,13 @@ class System():
         self.clock = 0
 
         # Instantiate logger
+        EXCEL_DIR = os.path.join(LOG_DIR, 'excel')
+        CSV_DIR = os.path.join(LOG_DIR, 'csv')
         os.makedirs(LOG_DIR, exist_ok=True)
-        OUT_PATH = os.path.join(LOG_DIR, f'rep{replication_id}.log')
+        os.makedirs(EXCEL_DIR, exist_ok=True)
+        os.makedirs(CSV_DIR, exist_ok=True)
+
+        OUT_PATH = os.path.join(CSV_DIR, f'rep{replication_id}.log')
         self.log = Logger(OUT_PATH)
         self.log.write_header()
         # Track number of products output in order to calculate throughput
@@ -108,7 +112,7 @@ class System():
         self.WS3_BUSY = 18
 
         self.now = time.strftime("%H-%M-%S")
-        self.logfile = "Log" + str(replication_id) + ".xls"
+        self.logfile = os.path.join(EXCEL_DIR, "Log" + str(replication_id) + ".xls")
         print("new file:" + self.logfile)
         self.workbook = xlwt.Workbook(self.logfile)
         self.worksheet = self.workbook.add_sheet(
