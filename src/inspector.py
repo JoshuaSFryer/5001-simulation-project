@@ -29,6 +29,7 @@ class Inspector:
         self.workstations = stations
         # Cyclic iterator of workstations (used in Round Robin policy)
         self.ws_cycle = cycle(self.workstations)
+        self.current_ws = next(self.ws_cycle)
         # How this inspector routes its outputs
         self.routing = out_routing
         # Currently-held component
@@ -121,9 +122,9 @@ class Inspector:
             # If any workstation is blocked, DO NOT move on to trying another
             # station. Instead, return None and wait for the current one to
             # have an opening in its buffer.
-            w = next(self.ws_cycle)
-            if w.can_accept(self.component):
-                chosen_workstation = w
+            if self.current_ws.can_accept(self.component):
+                chosen_workstation = self.current_ws
+                self.current_ws = next(self.ws_cycle)
             else:
                 chosen_workstation = None
 
