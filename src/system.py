@@ -175,6 +175,11 @@ class System():
                 ins.time_blocked += (self.clock - ins.last_event_time)
                 ins.last_event_time = self.clock
 
+        if self.inspectors[0].is_blocked() and self.inspectors[1].is_blocked:
+            while self.inspectors[0].is_blocked():
+                self.inspectors[0].current_ws = next(self.inspectors[0].ws_cycle)
+            self.blocked_inspectors.remove(self.inspectors[0])
+
         self.print_inspectors()
         self.print_workstations()
         self.print_event_list()
