@@ -9,10 +9,8 @@ import random
 from queue import PriorityQueue
 import sys
 
-from buffer import Buffer
 from component import ComponentType, ProductType
 from event import *
-from fel import FutureEventList
 from inspector import Inspector, OutputPolicy
 from logger import Logger
 from rng import generate_exp
@@ -117,9 +115,7 @@ class System():
         self.workbook = xlwt.Workbook(self.logfile)
         self.worksheet = self.workbook.add_sheet(
             'log1', cell_overwrite_ok=True)
-        # cell_overwrite_ok = True
-        # self.worksheet.write("infoPlist", cell_overwrite_ok) # allow to overwrite
-        # self.rows_old = self.worksheet.nrows
+
         self.rows_old = 0
         self.write_excel_xls_append("Time", self.TimeColumn)
         self.write_excel_xls_append("CurrentEvent", self.CurrentEventColumn)
@@ -142,10 +138,7 @@ class System():
         self.write_excel_xls_append("ws2Busy", self.WS2_BUSY)
         self.write_excel_xls_append("ws3Busy", self.WS3_BUSY)
 
-        # self.write_excel_xls_append("111", 2)
-        # self.write_excel_xls_save(self.logfile)
 
-        # self.write_excel_xls_append("111", 2)
 
         # Print initial state to console
         self.print_current_state_beforeproc(None)
@@ -262,17 +255,9 @@ class System():
         # consumed a component; the inspectors will push their component and
         # become unblocked.
 
-        # if wrk.all_components_ready(): LBS delete， because the components were taken at the beginning of assebling rather then
-        # the completion of assembling
+       
 
-        #  LBS delete: because blocked_inspectors = [i for i in self.inspectors if i.is_blocked(), that is enough. we need not to
-        #  judge if "i.component in ws_types", because it will make things complex and may make mistakes
-        #  Hint: blocked_inspectors can only be added when a INS found itself was blocked, and only be removed
-        #  after output_component().
-        # ws_types = list(wrk.buffers.keys())
-        # blocked_inspectors = [i for i in self.inspectors if i.is_blocked() and i.component in ws_types]
-
-        wrk.assemble()  # LBS: complete assembling
+        wrk.assemble()  # complete assembling
 
         if event.id == 'WS1':
             self.num_P1 += 1
@@ -288,16 +273,11 @@ class System():
                 time = i.generate_time(self.clock, comp)
                 self.schedule_inspection(i, time)
                 released_inspectors.remove(i)
-            # Otherwise, do nothing LBS ADD
+            # Otherwise, do nothing 
 
-        # update the blocked_inspectors after output_component action LBS ADD
+        # update the blocked_inspectors after output_component action
         self.blocked_inspectors = released_inspectors
 
-        # Otherwise, do nothing. This situation may occur if too many assembly
-        # events are scheduled in the FEL (e.g. two events are scheduled, but
-        # the buffers contain 2 of one component and 1 of the other).
-        # else:
-        #     print('Assembly aborted: missing components.')
 
     def event_end(self):
         """
@@ -308,11 +288,6 @@ class System():
         self.print_final_statistics()
         self.write_excel_xls_save(self.logfile)  # save logfile
 
-    def generate_statistics(self):
-        """
-        Calculate important statistics and output them to file.
-        """
-        ...
 
     def print_event_list(self):
         tuples = list()
@@ -373,11 +348,6 @@ class System():
             self.write_excel_xls_append(
                 str(curr_event.time) + ":" + str(curr_event.id), self.CurrentEventColumn)
 
-        # self.write_excel_xls_append(str(round(self.get_inspector_by_id('IN1').time_blocked, 4)), self.BLOCKED_IN1)
-        # self.write_excel_xls_append(str(round(self.get_inspector_by_id('IN2').time_blocked, 4)), self.BLOCKED_IN2)
-        # self.write_excel_xls_append(str(self.num_P1), self.NUM_P1)
-        # self.write_excel_xls_append(str(self.num_P2), self.NUM_P2)
-        # self.write_excel_xls_append(str(self.num_P3), self.NUM_P3)
 
     def print_current_state_afterproc(self, curr_event):
         self.write_excel_xls_append(
@@ -433,54 +403,7 @@ class System():
         self.workbook.save(file)
         print("xls saved")
 
-    # def determine_next_departure(self, comp):
-    #     """
-    #     Return the time right after the time of the next assembly event that
-    #     will use up a component of the specified type.
-    #     This is used to
-    #     """
-    #     # Build a list of stations that can handle the specified component
-    #     station_ids = list()
-    #     for w in self.workstations:
-    #         if w.can_accept(comp):
-    #             station_ids.append(w.id)
 
-    #     # Find the first assembly event that involves any of these stations
-    #     # The inspector can try again the tick after that assembly is scheduled
-    #     # If it is still blocked, the inspector can run this function again
-    #     for event in sorted(self.event_list.queue):
-    #         id = event.id
-    #         if id in station_ids:
-    #             return event.time + 1.0
-
-    #     return None
-
-    # def determine_next_arrival(self, comp):
-    #     """
-    #     Determine the next event where an inspector that handles the specified
-    #     component type will output a component.
-    #     """
-    #     inspector_ids = list()
-    #     for i in self.inspectors:
-    #         if comp in i.input_types:
-    #             inspector_ids.append(i.id)
-
-    #     # Find the first inspeciton event that involves any of these stations
-    #     for event in sorted(self.event_list.queue):
-    #         id = event.id
-    #         if id in inspector_ids:
-    #             return event.time + 1.0
-
-
-# if __name__ == '__main__':
-#
-#     replication_number = sys.argv[1]
-# 	for curr_replication in range(replication_number):
-# 	    # Initialize a system
-# 	    sys = System(replication_number)
-# 	    # sys = System(50)
-# 	    while (sys.running):
-# 	        sys.time_advance()
 if __name__ == '__main__':
     replication_number = int(sys.argv[1])
 

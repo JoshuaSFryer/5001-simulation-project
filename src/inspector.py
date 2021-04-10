@@ -117,31 +117,7 @@ class Inspector:
             if not chosen_workstation.can_accept(self.component):
                 chosen_workstation = None
 
-        elif self.routing == OutputPolicy.ROUND_ROBIN:
-            # Cycle through WS1, WS2, WS3.
-            # If any workstation is blocked, DO NOT move on to trying another
-            # station. Instead, return None and wait for the current one to
-            # have an opening in its buffer.
-
-            for w in self.workstations:
-                if w.can_accept(self.component):
-                    chosen_workstation = w
-
-            # if self.current_ws.can_accept(self.component):
-            #     chosen_workstation = self.current_ws
-            #     self.current_ws = next(self.ws_cycle)
-            # else:
-            #     if next(self.ws_cycle).can_accept(self.component):  # LBS ADD, check next one
-            #         chose_workstation = next(self.ws_cycle)
-            #     else:
-            #         # chosen_workstation = None
-            #         if .can_accept(self.component):  # LBS Add: check next of next one
-            #             chosen_workstation = next(next(self.ws_cycle).ws_cycle)  # LBS ADD
-            #         else:
-            #             chosen_workstation = None  # LBS ADD
-
-                # chosen_workstation = None  # LBS
-
+    
         return chosen_workstation
 
     def get_id(self):
