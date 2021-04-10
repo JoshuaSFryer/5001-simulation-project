@@ -6,9 +6,11 @@ from rng import generate_exp
 
 
 class Workstation:
-    def __init__(self, parent, id, lam, inputs:list, output:ProductType):
+    def __init__(self, parent, id, lam, inputs: list, output: ProductType):
         # ID string
         self.id = id
+        # busy or idle state LBS ADD
+        self.busy = False
         # Reference to system
         self.parent = parent
         # Lambda of exponential distribution associated with this inspector
@@ -20,10 +22,9 @@ class Workstation:
         self.output_type = output
 
         self.buffers = dict()
-        self.ready_components = dict()
+        self.ready_components = dict()  # LBS: not used
         for comp in inputs:
             self.buffers[comp] = Buffer(comp)
-
 
     def generate_time(self, base_time):
         """
@@ -31,8 +32,7 @@ class Workstation:
         """
         return base_time + generate_exp(self.lam, self.rng)
 
-    
-    def can_accept(self, input:ComponentType):
+    def can_accept(self, input: ComponentType):
         """
         Check to see if this station can accept a component passed to it.
         This requires a Buffer of the correct type, that is not full.
@@ -42,9 +42,8 @@ class Workstation:
             if not self.buffers[input].is_full():
                 return True
         return False
-        
 
-    def get_buffer(self, input:ComponentType):
+    def get_buffer(self, input: ComponentType):
         """
         Get the buffer associated with the given component, or None.
         """
@@ -52,8 +51,7 @@ class Workstation:
             return self.buffers[input]
         return None
 
-    
-    def enqueue_component(self, input:ComponentType):
+    def enqueue_component(self, input: ComponentType):
         """
         Take a component provided by an inspector and put it in the appropriate
         buffer.
@@ -61,10 +59,10 @@ class Workstation:
         try:
             self.buffers[input].enqueue(input)
         except BufferException as e:
-            raise(e)
+            raise (e)
 
-    
-    def accept_component(self, input:ComponentType):
+    # used in inspector.output_component()
+    def accept_component(self, input: ComponentType):
         """
         Recieve a component from an inspector. If this new component's arrival
         means that this workstation has the parts it needs to perform an
@@ -74,28 +72,29 @@ class Workstation:
         if self.all_components_ready():
             self.notify_ready()
 
-
     def notify_ready(self):
         """
         Notify the system that this workstation has all the parts it needs to
-        begin assembly
+        begin assembly, generate the endassembly event
         """
         time = self.generate_time(self.parent.clock)
-        self.parent.schedule_workstation(self, time)
+        self.parent.schedule_workstation(
+            self, time)  # generate endassembly event
+        self.busy = True
 
-    
-    def assemble(self):
+    def assemble(self):  # LBS: what function does assemble do, start to assemble, or assemble finished?
         """
         Take the required components from the buffers and return True if successful.
         If not, do nothing and return False.
+        LBS: assembling takes time. here the function assemble() denotes the completion of assemble, not the start of assemble
+        required components from the buffers should be taken when the EndAssemble event is identified.
         """
-        if self.all_components_ready():
-            for comp in self.buffers.keys():
-                self.get_buffer(comp).dequeue()
-            return True
-        
-        return False
+        self.busy = False
 
+        if self.all_components_ready():
+            self.notify_ready()
+
+        return True
 
     def all_components_ready(self):
         """
@@ -107,7 +106,6 @@ class Workstation:
                 return False
         return True
 
-    
     def find_missing_components(self):
         """
         Determine which component types are missing, preventing the workstation
@@ -120,7 +118,6 @@ class Workstation:
                 missing.append(t)
 
         return missing
-
 
     def comp_ready(self, component):
         """

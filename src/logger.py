@@ -9,9 +9,9 @@ class Logger:
             'time',
             'blocked_IN1',
             'blocked_IN2',
-            'throughput_P1',
-            'throughput_P2',
-            'throughput_P3'
+            'total_P1',
+            'total_P2',
+            'total_P3'
         )
         with open(self.path, 'w') as f:
             f.write(self.sep.join(header_lines) + '\n')
