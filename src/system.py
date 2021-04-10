@@ -115,7 +115,6 @@ class System():
         self.workbook = xlwt.Workbook(self.logfile)
         self.worksheet = self.workbook.add_sheet(
             'log1', cell_overwrite_ok=True)
-
         self.rows_old = 0
         self.write_excel_xls_append("Time", self.TimeColumn)
         self.write_excel_xls_append("CurrentEvent", self.CurrentEventColumn)
@@ -139,6 +138,12 @@ class System():
         self.write_excel_xls_append("ws3Busy", self.WS3_BUSY)
 
 
+        # Print initial state to console
+        self.print_current_state_beforeproc(None)
+        self.print_inspectors()
+        self.print_workstations()
+        self.print_event_list()
+        self.print_current_state_afterproc(None)
 
         # Print initial state to console
         self.print_current_state_beforeproc(None)
@@ -403,7 +408,15 @@ class System():
         self.workbook.save(file)
         print("xls saved")
 
-
+# if __name__ == '__main__':
+#
+#     replication_number = sys.argv[1]
+# 	for curr_replication in range(replication_number):
+# 	    # Initialize a system
+# 	    sys = System(replication_number)
+# 	    # sys = System(50)
+# 	    while (sys.running):
+# 	        sys.time_advance()
 if __name__ == '__main__':
     replication_number = int(sys.argv[1])
 
